@@ -1,0 +1,9 @@
+D:\Progetti\RightNova\RightNova\bin\Debug\RightNova.exe
+D:\Progetti\RightNova\RightNova\bin\Debug\RightNova.pdb
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.csproj.AssemblyReference.cache
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.Properties.Resources.resources
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.RightNova.resources
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.csproj.GenerateResource.cache
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.csproj.CoreCompileInputs.cache
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.exe
+D:\Progetti\RightNova\RightNova\obj\Debug\RightNova.pdb

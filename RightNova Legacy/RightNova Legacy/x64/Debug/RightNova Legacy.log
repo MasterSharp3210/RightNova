@@ -1,0 +1,3 @@
+﻿  RightNova Legacy.cpp
+D:\Progetti\RightNova\RightNova Legacy\RightNova Legacy.cpp(194,57): warning C4267: 'argomento': conversione da 'size_t' a 'DWORD'. Possibile perdita di dati.
+  RightNova Legacy.vcxproj -> D:\Progetti\RightNova\RightNova Legacy\x64\Debug\RightNova Legacy.exe
