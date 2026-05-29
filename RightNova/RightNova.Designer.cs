@@ -339,7 +339,6 @@
             useWin32APIToolStripMenuItem.Name = "useWin32APIToolStripMenuItem";
             useWin32APIToolStripMenuItem.Size = new Size(199, 22);
             useWin32APIToolStripMenuItem.Text = "Use Win32 API";
-            useWin32APIToolStripMenuItem.Click += useWin32APIToolStripMenuItem_Click;
             // 
             // useWindowsAssemblyToolStripMenuItem
             // 
