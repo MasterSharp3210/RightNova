@@ -237,7 +237,7 @@ namespace RightNova
             if (osLinguage == "it")
             {
                 MessageBox.Show("Copyright © 2026 MasterSharp Team LLC. Tutti i diritti riservati.\n\n" +
-                "RightNova 1.5.0 by Marco Del Prete (aka.MasterSharp3210)\n" +
+                "RightNova 1.5.0 by Itelcan3 (aka.MasterSharp3210)\n" +
                 "https://twitter.com/MasterSharp3210\n" +
                 "https://github.com/MasterSharp3210\n\n" +
                 "RightNova è un programma che consente all'utente di lavorare con le WinAPI per ottenere riferimenti all'hardware e utilizzare tutte le risorse a disposizione di Windows...\n\n" +
@@ -252,7 +252,7 @@ namespace RightNova
             else
             {
                 MessageBox.Show("Copyright © 2026 MasterSharp Team LLC. All rights reserved.\n\n" +
-                "RightNova 1.5.0 by Marco Del Prete (aka.MasterSharp3210)\n" +
+                "RightNova 1.5.0 by Itelcan3 (aka.MasterSharp3210)\n" +
                 "https://twitter.com/MasterSharp3210\n" +
                 "https://github.com/MasterSharp3210\n\n" +
                 "RightNova is a program that allows the user to work with the WinAPI to get references to the hardware and use all the resources available in Windows...\n\n" +
