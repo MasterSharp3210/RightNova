@@ -388,9 +388,5 @@ namespace RightNova
                 UseShellExecute = true
             });
         }
-
-        private void useWin32APIToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-        }
     }
 }
