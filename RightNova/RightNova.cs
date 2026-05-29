@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging.Effects;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace RightNova
 {
@@ -21,8 +16,12 @@ namespace RightNova
     {
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool AllocConsole();
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool FreeConsole();
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern bool DestroyIcon(IntPtr hIcon);
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SHFILEINFO
@@ -55,11 +54,22 @@ namespace RightNova
             InitializeComponent();
 
             SHFILEINFO shinfo = new SHFILEINFO();
-            SHGetFileInfo(".exe", 0, out shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_LARGEICON | SHGFI_USEFILEATTRIBUTES);
+
+            SHGetFileInfo(
+                ".exe",
+                0,
+                out shinfo,
+                (uint)Marshal.SizeOf<SHFILEINFO>(),
+                SHGFI_ICON | SHGFI_LARGEICON | SHGFI_USEFILEATTRIBUTES);
 
             if (shinfo.hIcon != IntPtr.Zero)
             {
-                this.Icon = Icon.FromHandle(shinfo.hIcon);
+                using (Icon tempIcon = Icon.FromHandle(shinfo.hIcon))
+                {
+                    Icon = (Icon)tempIcon.Clone();
+                }
+
+                DestroyIcon(shinfo.hIcon);
             }
         }
 
@@ -81,14 +91,16 @@ namespace RightNova
         static string OSInfo()
         {
             foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT Caption FROM Win32_OperatingSystem").Get())
-                return obj["Caption"].ToString();
+                return obj["Caption"]?.ToString() ?? "Unknown OS";
+
             return "Unknown OS";
         }
 
         static string CPUInfo()
         {
             foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT Name FROM Win32_Processor").Get())
-                return obj["Name"].ToString();
+                return obj["Name"]?.ToString() ?? "Unknown CPU";
+
             return "Unknown CPU";
         }
 
@@ -96,13 +108,13 @@ namespace RightNova
         {
             foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT NumberOfCores, NumberOfLogicalProcessors FROM Win32_Processor").Get())
                 return "Cores: " + obj["NumberOfCores"] + " / Threads: " + obj["NumberOfLogicalProcessors"];
+
             return "Unknown";
         }
 
         static string RAMInfo()
         {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(
-                "SELECT TotalVisibleMemorySize FROM Win32_OperatingSystem").Get())
+            foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT TotalVisibleMemorySize FROM Win32_OperatingSystem").Get())
             {
                 ulong kb = Convert.ToUInt64(obj["TotalVisibleMemorySize"]);
 
@@ -110,6 +122,7 @@ namespace RightNova
 
                 return gb.ToString("0.0") + " GB";
             }
+
             return "Unknown RAM";
         }
 
@@ -134,14 +147,14 @@ namespace RightNova
             if (size >= KB)
                 return (size / KB).ToString("0.0") + " KB";
 
-            return size.ToString() + " B";
+            return size + " B";
         }
 
         static string DiskInfo()
         {
             string info = "";
 
-            DriveInfo drive = new DriveInfo("C");
+            DriveInfo drive = new("C");
 
             if (drive.IsReady)
             {
@@ -153,53 +166,54 @@ namespace RightNova
 
                 info = "Disk Space (C:): " + free + " free of " + total;
             }
+
             return info;
         }
 
         static string GPUInfo()
         {
             foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController").Get())
-                return obj["Name"].ToString();
+                return obj["Name"]?.ToString() ?? "Unknown GPU";
+
             return "Unknown GPU";
         }
 
         static string MotherboardInfo()
         {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(
-                "SELECT Product FROM Win32_BaseBoard").Get())
-            {
-                return obj["Product"].ToString();
-            }
+            foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT Product FROM Win32_BaseBoard").Get())
+                return obj["Product"]?.ToString() ?? "Unknown Motherboard";
+
             return "Unknown Motherboard";
         }
 
         static string BIOSInfo()
         {
-            foreach (ManagementObject obj in new ManagementObjectSearcher(
-                "SELECT SMBIOSBIOSVersion FROM Win32_BIOS").Get())
-            {
-                return obj["SMBIOSBIOSVersion"].ToString();
-            }
+            foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT SMBIOSBIOSVersion FROM Win32_BIOS").Get())
+                return obj["SMBIOSBIOSVersion"]?.ToString() ?? "Unknown BIOS";
+
             return "Unknown BIOS";
         }
 
         static string GetVolume()
         {
             foreach (ManagementObject obj in new ManagementObjectSearcher("SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE DeviceID='C:'").Get())
-                return obj["VolumeSerialNumber"].ToString();
+                return obj["VolumeSerialNumber"]?.ToString() ?? "";
+
             return "";
         }
 
         static string ComputeSHA(string input)
         {
-            using (SHA1 sha = SHA1.Create())
-            {
-                byte[] data = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
-                StringBuilder sb = new StringBuilder();
-                foreach (byte b in data)
-                    sb.Append(b.ToString("X2"));
-                return sb.ToString();
-            }
+            using SHA256 sha = SHA256.Create();
+
+            byte[] data = sha.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            StringBuilder sb = new();
+
+            foreach (byte b in data)
+                sb.Append(b.ToString("X2"));
+
+            return sb.ToString();
         }
 
         static string HWIDInfo()
@@ -222,7 +236,7 @@ namespace RightNova
 
             if (osLinguage == "it")
             {
-                MessageBox.Show("Copyright © 2026 MasterSharp Team LLC. Tutti i diritti riservati.\n\n" + 
+                MessageBox.Show("Copyright © 2026 MasterSharp Team LLC. Tutti i diritti riservati.\n\n" +
                 "RightNova 1.5.0 by Marco Del Prete (aka.MasterSharp3210)\n" +
                 "https://twitter.com/MasterSharp3210\n" +
                 "https://github.com/MasterSharp3210\n\n" +
@@ -254,7 +268,11 @@ namespace RightNova
 
         private void rightNovaWebsiteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("https://github.com/MasterSharp3210/RightNova");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://github.com/MasterSharp3210/RightNova",
+                UseShellExecute = true
+            });
         }
 
         private void rightNovaLegacyToolStripMenuItem_Click(object sender, EventArgs e)
@@ -264,7 +282,7 @@ namespace RightNova
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Environment.Exit(0);
+            Application.Exit();
         }
 
         private void refreshToolStripMenuItem_Click(object sender, EventArgs e)
@@ -302,6 +320,7 @@ namespace RightNova
                           HWIDLabel.Text;
 
             Clipboard.SetText(text);
+
             MessageBox.Show("System information copied to clipboard!", "RightNova", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -323,10 +342,12 @@ namespace RightNova
                 LineLabel3.Text + "\r\n" +
                 HWIDLabel.Text;
 
-            SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "Text File (*.txt)|*.txt";
-            sfd.Title = "Save System Info";
-            sfd.FileName = "system_info.txt";
+            SaveFileDialog sfd = new()
+            {
+                Filter = "Text File (*.txt)|*.txt",
+                Title = "Save System Info",
+                FileName = "sys_info.txt"
+            };
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
@@ -334,19 +355,42 @@ namespace RightNova
             }
         }
 
+        private void extendToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExtendAPI extendapi = new ExtendAPI();
+            extendapi.ShowDialog();
+        }
+
         private void openPromptToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("cmd.exe");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                UseShellExecute = true
+            });
         }
 
         private void openAdminCmdToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start(new ProcessStartInfo("cmd.exe") { Verb = "runas" });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Verb = "runas",
+                UseShellExecute = true
+            });
         }
 
         private void openPowerShellToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Process.Start("powershell.exe");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                UseShellExecute = true
+            });
+        }
+
+        private void useWin32APIToolStripMenuItem_Click(object sender, EventArgs e)
+        {
         }
     }
 }
